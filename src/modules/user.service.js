@@ -1,3 +1,4 @@
+import { ObjectId } from "mongodb"
 import { User } from "../db/models/user.model.js"
 
 export const createUser = async (req,res)=>{
@@ -22,5 +23,18 @@ export const getAllUSers= async (req,res)=>{
     return res.status(200).json({message:"users found", success:true, data:users})
 }
 export const updateUser= async (req,res)=>{
-    const updateUser = await User.updateOne()
+    try {
+        const {id} = req.params
+        const userExist = await User.findOne({email:req.body.email, _id: {$ne:new ObjectId(id)}})
+        if(userExist){
+            throw Error("email already exist", {cause:409})
+        }
+      const {matchedCount}=await  User.updateOne({_id: new ObjectId(id)},{ $set: req.body  } )
+      if(matchedCount==0){
+        throw new Error("nothing updated", {cause:404})
+      }
+      return res.status(200).json({message:"user updated", success:true  })
+    } catch (error) {
+        return res.status(error.cause || 500).json({message:error.message, success:false, stack:error.stack})
+    }
 }
