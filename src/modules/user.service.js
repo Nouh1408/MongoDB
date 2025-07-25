@@ -11,9 +11,16 @@ export const createUser = async (req,res)=>{
         return res.status(error.cause || 500).json({message:error.message, success:false, stack:error.stack})
     }
 }
-export const getAllUSers=(req,res)=>{
-
+export const getAllUSers= async (req,res)=>{
+    //const users = await User.find().toArray()
+    const cursor = User.find()
+    const users = []
+    while(await cursor.hasNext()){
+        const doc = await cursor.next()
+        users.push(doc)
+    }
+    return res.status(200).json({message:"users found", success:true, data:users})
 }
-export const updateUser=(req,res)=>{
-
+export const updateUser= async (req,res)=>{
+    const updateUser = await User.updateOne()
 }
